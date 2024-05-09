@@ -6,6 +6,8 @@ library(tidyverse)
 library(quantreg)
 library(Qtools)
 library(corrplot)
+library(kableExtra)
+
 
 dat <- read_csv('data_working/across_sites_model_data.csv')
 
@@ -215,6 +217,20 @@ mod_table <- arrange(mod_table, -AIC )
 mod_table
 write_csv(mod_table, 'data_working/constrained_quantile_regression_results_NEP.csv')
 write_csv(mod_table, 'data_working/constrained_quantile_regression_results_PR.csv')
+
+
+NEP <- read_csv('data_working/constrained_quantile_regression_results_NEP.csv')
+PR <- read_csv('data_working/constrained_quantile_regression_results_PR.csv')
+
+PR %>% select(mod, AIC_PR = AIC, R1_PR = R1) %>%
+  left_join(select(NEP, mod, AIC_NEP = AIC, R1_NEP = R1), by = 'mod') %>%
+  arrange(AIC_PR) %>%
+  mutate(across(starts_with('AIC'), ~round(., 1)),
+         across(starts_with('R1'), ~round(., 3))) %>%
+  kbl(caption = 'AIC and R1 calues for constrained quantile regression models',
+      format = 'latex',
+      align = c('l', 'r', 'r', 'r', 'r')) %>%
+  kable_classic(full_width = F, html_font = 'helvetica')
 
 png('figures/quantile_regression_coefficients_grouped_NEP.png', width = 7, height = 4,
     units = 'in', res = 300)
