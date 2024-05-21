@@ -1,7 +1,7 @@
 ##==============================================================================
 ## Script for autotrophy duration 
 ## Code author: J.R. Blaszczak
-## Last Edited: April 19, 2024
+## Last Edited: May 16, 2024
 ##
 ## Changed NEP to P:R as the metric by which we are quantifying autotrophy
 ## Added NEP Figure back in
@@ -125,7 +125,7 @@ length(levels(as.factor(auto_df[which(auto_df$event_dur > 7),]$site_name))) ##14
 length(levels(as.factor(auto_df[which(auto_df$event_dur > 14),]$site_name))) ##82
 length(levels(as.factor(auto_df[which(auto_df$event_dur > 21),]$site_name))) ##43
 length(levels(as.factor(auto_df[which(auto_df$event_dur > 28),]$site_name))) ##21
-length(levels(as.factor(df$site_name))) # 223 sites
+length(levels(as.factor(df$site_name))) # 223 sites total
 147/223 #67% have an event longer than one week
 82/223 #37% have an event longer than two weeks
 43/223 #19% have an event longer than three weeks
@@ -204,12 +204,39 @@ mean_sd_length_year
 auto_df$onset_month <- month(auto_df$start_date)
 auto_df$end_month <- month(auto_df$end_date)
 
-#all (4+ days)
-ggplot(auto_df, aes(as.factor(onset_month)))+
-  geom_bar(fill="#010D26", alpha=0.7, color="black")+
-  geom_bar(aes(end_month), fill="#4CBFBB", alpha=0.5, color="black")+
-  labs(x="Month", y="Number of Events",title = "Onset Month = grey, End Month = teal")+
+## number of sites with data
+df$month <- month(df$date)
+df_months <- split(df, df$month)
+df_total_months <- ldply(lapply(df_months, function(x) length(levels(as.factor(x$site_name)))), data.frame)
+colnames(df_total_months) <- c("onset_month","total_sites")
+
+## onset of events per month dataframe
+onset_events_df <- auto_df %>%
+  group_by(duration_length, onset_month) %>%
+  count()
+onset_events_df <- merge(onset_events_df, df_total_months, by="onset_month")
+onset_events_df$onset_mean_by_site <- onset_events_df$n/onset_events_df$total_sites
+onset_events_df$end_mean_by_site <- onset_events_df$n/onset_events_df$total_sites
+
+## end of events per month dataframe
+colnames(df_total_months) <- c("end_month","total_sites")
+end_events_df <- auto_df %>%
+  group_by(duration_length, end_month) %>%
+  count()
+end_events_df <- merge(end_events_df, df_total_months, by="end_month")
+end_events_df$end_mean_by_site <- end_events_df$n/end_events_df$total_sites
+end_events_df$end_mean_by_site <- end_events_df$n/end_events_df$total_sites
+
+
+
+## all for SI
+ggplot(onset_events_df, aes(as.factor(onset_month), onset_mean_by_site))+
+  geom_bar(stat = "identity")+
+  geom_bar(data = end_events_df, aes(as.factor(end_month),end_mean_by_site),stat = "identity",
+                                     fill="#4CBFBB", alpha=0.5, color="black")+
   facet_wrap(~as.factor(duration_length), ncol=1, scales = "free_y")+
+  labs(x="Month", y="Mean Number of Events Per Site",
+       title = "Onset Month = grey, End Month = teal")+
   theme_bw()+
   theme(panel.grid.major.y = element_line(color="gray85"),
         title = element_text(size=8),
@@ -218,11 +245,12 @@ ggplot(auto_df, aes(as.factor(onset_month)))+
         axis.text.y = element_text(size=12),
         strip.background = element_rect(fill="white", color = "black"))
 
-#Onset only
-ggplot(auto_df[-which(auto_df$event_dur < 4),], aes(as.factor(onset_month)))+
-  geom_bar(fill="#4CBFBB", alpha=0.4, color="black")+
-  labs(x="Month", y="Number of Events",title = "Onset Month of Autotrophic Event")+
+## Onset only and 4+ days only for main text
+ggplot(onset_events_df[-which(onset_events_df$duration_length == "1 day to 3 days"),], aes(as.factor(onset_month), onset_mean_by_site))+
+  geom_bar(stat = "identity")+
   facet_wrap(~as.factor(duration_length), ncol=1, scales = "free_y")+
+  labs(x="Month", y="Mean Number of Events Per Site",
+       title = "Onset Month = grey, End Month = teal")+
   theme_bw()+
   theme(panel.grid.major.y = element_line(color="gray85"),
         title = element_text(size=8),
@@ -230,6 +258,7 @@ ggplot(auto_df[-which(auto_df$event_dur < 4),], aes(as.factor(onset_month)))+
         axis.text.x = element_text(size=12),
         axis.text.y = element_text(size=12),
         strip.background = element_rect(fill="white", color = "black"))
+
 
 ## 5 ## Magnitude of Mean P:R & NEP during events
 
@@ -285,14 +314,18 @@ plot_grid(
 
   
   
-  ggplot(auto_df[-which(auto_df$event_dur < 4),], aes(as.factor(onset_month)))+
-    geom_bar(fill="black", alpha=0.7, color="black")+
-    labs(x="Month of Onset",
-         y="Number of Events")+
-    facet_wrap(~as.factor(duration_length), ncol=1, scales = "free_y")+
-    theme_bw(base_size = 12)+
-    theme(panel.grid.major.y = element_line(color="gray85"),
-          strip.background = element_rect(fill="white", color = "black")),
+ggplot(onset_events_df[-which(onset_events_df$duration_length == "1 day to 3 days"),], aes(as.factor(onset_month), onset_mean_by_site))+
+  geom_bar(stat = "identity")+
+  facet_wrap(~as.factor(duration_length), ncol=1, scales = "free_y")+
+  labs(x="Month", y="Mean Number of Events Per Site",
+       title = "Onset Month = grey, End Month = teal")+
+  theme_bw(base_size = 12)+
+  theme(panel.grid.major.y = element_line(color="gray85"),
+        title = element_text(size=8),
+        axis.title = element_text(size=12),
+        axis.text.x = element_text(size=12),
+        axis.text.y = element_text(size=12),
+        strip.background = element_rect(fill="white", color = "black")),
   align = "h", ncol = 2, labels = c("","C")
 )
 
