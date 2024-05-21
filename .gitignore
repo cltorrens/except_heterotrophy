@@ -37,4 +37,5 @@ BernhardtMetabolism_0.1.1
 metabolism_synthesis 
 # local project todo list
 todo_autotrophy.txt
+*.doc*
 
