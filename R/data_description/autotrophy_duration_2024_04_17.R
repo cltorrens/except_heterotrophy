@@ -12,6 +12,7 @@ lapply(c("plyr","dplyr","ggplot2","cowplot","lubridate",
          "tidyverse","data.table"), require, character.only=T)
 
 ## import most up-to-date dataset
+# dat <- readRDS("data_356rivers/high_quality_daily_metabolism_with_SP_covariates.rds")
 dat <- readRDS("../../data_356rivers/high_quality_daily_metabolism_with_SP_covariates.rds")
 df <- dat[,c("site_name","date","GPP","ER")]
 df <- na.omit(df)
@@ -117,6 +118,7 @@ saveRDS(auto_df, "../../data_356rivers/autotrophic_event_duration_means.rds")
 #############################################
 ## Calculations and figures for results
 #############################################
+# auto_df <- readRDS("data_356rivers/autotrophic_event_duration_means.rds")
 auto_df <- readRDS("../../data_356rivers/autotrophic_event_duration_means.rds")
 
 ## 1 ## What % of rivers experienced at least one autotrophic event
@@ -149,11 +151,11 @@ nrow(auto_df[which(auto_df$year_diff > 0),]) ## only 18 sites; will attribute to
 #classify if an event is 1-3 days or 1-3 months
 duration_days<-c(1, 4, 8, 15, 31, 91)
 auto_df$duration_cat <- factor(findInterval(auto_df$event_dur,duration_days))
-auto_df$duration_length <- revalue(auto_df$duration_cat, c("1" = "1 day to 3 days",
-                                              "2" = "4 days to 1 week",
-                                              "3" = "1 week to 2 weeks", #8-14 days
-                                              "4" = "2 weeks to 1 month", #15-31 days
-                                              "5" = "1 month to 3 months")) #32-91 days
+auto_df$duration_length <- revalue(auto_df$duration_cat, c("1" = "1 to 3 d",
+                                              "2" = "4 d - 1 wk",
+                                              "3" = "1 - 2 wk", #8-14 days
+                                              "4" = "2 wk - 1 mo", #15-31 days
+                                              "5" = "1 - 3 mo")) #32-91 days
 
 ## visualize
 ggplot(auto_df, aes(duration_length))+
@@ -246,7 +248,8 @@ ggplot(onset_events_df, aes(as.factor(onset_month), onset_mean_by_site))+
         strip.background = element_rect(fill="white", color = "black"))
 
 ## Onset only and 4+ days only for main text
-ggplot(onset_events_df[-which(onset_events_df$duration_length == "1 day to 3 days"),], aes(as.factor(onset_month), onset_mean_by_site))+
+ggplot(onset_events_df[-which(onset_events_df$duration_length == "1 - 3 d"),], 
+       aes(as.factor(onset_month), onset_mean_by_site))+
   geom_bar(stat = "identity")+
   facet_wrap(~as.factor(duration_length), ncol=1, scales = "free_y")+
   labs(x="Month", y="Mean Number of Events Per Site",
@@ -288,40 +291,47 @@ NEP_mag
 #####################################
 scaleFUN <- function(x) sprintf("%.2f", x)
 
+png('figures/Auto_events_figure.png', width = 6.5, height = 4, units = 'in',
+    res = 300)
 plot_grid(
 
 plot_grid(
   
   ggplot(auto_df[-which(auto_df$event_dur < 4),], aes(duration_length))+
-    geom_bar(alpha=0.7, fill="black", color="black", position="identity")+
+    geom_bar(fill="grey70", color="black", position="identity")+
     theme_bw(base_size = 12)+
     theme(panel.grid.major.y = element_line(color="gray85"),
+          panel.background = element_rect(fill='transparent'), #transparent panel bg
+          plot.background = element_rect(fill='transparent', color=NA), #transparent plot bg
           axis.title.x = element_blank(),
-          axis.text.x = element_blank())+
-    labs(y="Number of Events"),
-  
+          axis.text.x = element_blank(),
+          axis.title.y = element_text(margin = margin(t = 0, b = -10)))+
+    labs(y=expression(atop("Number", paste("of Events")))),
   ggplot(auto_df[-which(auto_df$event_dur < 4),], aes(duration_length, NEP_mean, group = duration_length))+
-    geom_boxplot(fill="black",alpha=0.7)+
+    geom_violin(fill = 'grey70') +
+    geom_boxplot(col="black",  width = 0.1, outlier.shape = NA)+
     theme_bw(base_size = 12)+
-    scale_y_continuous(trans = "log", breaks = c(0.05, 0.5, 5, 30))+
+    scale_y_continuous(trans = "log", breaks = c(0.05, 0.5, 5, 30),
+                       labels = c('0.05', '0.5', '5', '30'))+
     labs(x = "Event Duration",
-         y = expression('Mean NEP (g '*~O[2]~ m^-2~d^-1*')'))+
-    theme(axis.text.x = element_text(size=10, angle=45, hjust = 1),
-          axis.text.y = element_text()),
+         y = expression(atop('Mean NEP', paste('(g ', O[2], ' m'^-2, ' d'^-1, ')')))) +
+    theme(axis.text.x = element_text(size=10, angle=30, hjust = 1),
+          axis.text.y = element_text(),
+          axis.title.y = element_text(margin = margin(t = 0, b = -10))),
   
   
   align = "v", ncol = 1, rel_heights = c(0.6,1), labels = c("A","B")),
 
   
-  
-ggplot(onset_events_df[-which(onset_events_df$duration_length == "1 day to 3 days"),], aes(as.factor(onset_month), onset_mean_by_site))+
-  geom_bar(stat = "identity")+
-  facet_wrap(~as.factor(duration_length), ncol=1, scales = "free_y")+
-  labs(x="Month", y="Mean Number of Events Per Site",
-       title = "Onset Month = grey, End Month = teal")+
+onset_events_df[-which(onset_events_df$duration_length == "1 to 3 d"),]  %>%
+ggplot(aes(as.factor(onset_month), onset_mean_by_site))+
+  geom_bar(stat = "identity", fill = 'grey70', col = 'black')+
+  facet_wrap(~as.factor(duration_length), ncol=1, scales = "free_y",
+             strip.position = 'right')+
+  labs(x="Onset Month", y="Mean Number of Events Per Site")+
+  scale_x_discrete(labels=substr(month.abb, 1,1))+
   theme_bw(base_size = 12)+
   theme(panel.grid.major.y = element_line(color="gray85"),
-        title = element_text(size=8),
         axis.title = element_text(size=12),
         axis.text.x = element_text(size=12),
         axis.text.y = element_text(size=12),
@@ -330,6 +340,6 @@ ggplot(onset_events_df[-which(onset_events_df$duration_length == "1 day to 3 day
 )
 
 
-
+dev.off()
 
 # End of script.
