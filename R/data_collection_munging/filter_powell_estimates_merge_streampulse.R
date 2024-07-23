@@ -20,6 +20,11 @@ sum(pw$GPP.Rhat >= 1.05 | pw$ER.Rhat >= 1.05 | pw$K600.Rhat >= 1.05)/nrow(pw)
 sum(pw$GPP < 0 & pw$GPP.Rhat < 1.05)/sum(!is.na(pw$GPP)) # negative GPP 10% of days
 sum(pw$ER > 0 & pw$ER.Rhat < 1.05)/sum(!is.na(pw$ER))  # positive ER 8.7% of days
 # total lost days ~ 14%
+pw %>% mutate(year = year(date)) %>%
+  group_by(site_name, year) %>%
+  summarize(ERxK600_cor = cor(ER, K600, use = 'complete.obs'),
+            n = length(which(!is.na(GPP)&!is.na(ER))))
+
 
 HQdays <-  pw %>%
   rename(GPP_raw = GPP, ER_raw = ER) %>%
@@ -141,6 +146,21 @@ sp_pw_sub <- sp_pw_sub %>%
   filter(!siteyear %in% NA_site_years$siteyear) %>%
   select(-siteyear, -Year)
 
+year_checks <- sp_sub %>%
+  mutate(year = year(date)) %>%
+  mutate(siteyear = paste(site_name, year, sep = '_')) %>%
+  filter(!siteyear %in% NA_site_years$siteyear) %>%
+  select(-siteyear, -Year)%>%
+  group_by(site_name, year) %>%
+  summarize(ERxK600_cor = cor(ER_filled, K600_sp, use = 'complete.obs'),
+            n = length(which(!is.na(GPP_filled)&!is.na(ER_filled))))
+
+year_checks <- sp_pw_sub %>% mutate(year = year(date)) %>%
+  group_by(site_name, year) %>%
+  summarize(ERxK600_cor = cor(ER, K600, use = 'complete.obs'),
+            n = length(which(!is.na(GPP)&!is.na(ER))))
+
+which(year_checks$ERxK600_cor< -0.75)
 
 # Save joined database
 # saveRDS(sp_pw_all, 'data_ignored/high_quality_daily_metabolism_with_SP_covariates_complete.rds')

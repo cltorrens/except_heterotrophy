@@ -29,23 +29,23 @@ nlcd_vars <- sc_vars %>% filter(grepl('^NLCD201[1,6]', Data.Location),
 #         grassland (shrub/scrub, grassland/herbaceous)
 
 d <- dat %>% 
-  mutate(NLCD_PctUrban = case_when(year < 2016 ~ PctUrbHi2011Ws + PctUrbMd2011Ws 
-                                   + PctUrbLo2011Ws + PctUrbOp2011Ws,
+  mutate(NLCD_PctUrban = case_when(year < 2016 ~ PctUrbHi2001Ws + PctUrbMd2001Ws 
+                                   + PctUrbLo2001Ws + PctUrbOp2001Ws,
                                    year >= 2016 ~ PctUrbHi2016Ws + PctUrbMd2016Ws 
                                    + PctUrbLo2016Ws + PctUrbOp2016Ws),
-         NLCD_PctAgriculture = case_when(year < 2016 ~ PctCrop2011Ws + PctHay2011Ws,
+         NLCD_PctAgriculture = case_when(year < 2016 ~ PctCrop2001Ws + PctHay2001Ws,
                                 year >= 2016 ~ PctCrop2016Ws + PctHay2016Ws),
-         NLCD_PctForest = case_when(year < 2016 ~ PctDecid2011Ws + 
-                                      PctConif2011Ws + PctMxFst2011Ws,
+         NLCD_PctForest = case_when(year < 2016 ~ PctDecid2001Ws + 
+                                      PctConif2001Ws + PctMxFst2001Ws,
                                     year >=2016 ~ PctDecid2016Ws +
                                       PctConif2016Ws + PctMxFst2016Ws),
-         NLCD_PctBarren = case_when(year < 2016 ~ PctBl2011Ws + PctIce2011Ws,
+         NLCD_PctBarren = case_when(year < 2016 ~ PctBl2001Ws + PctIce2001Ws,
                                     year >= 2016 ~PctBl2016Ws + PctIce2016Ws),
-         NLCD_PctWater = case_when(year < 2016 ~ PctOw2011Ws,
+         NLCD_PctWater = case_when(year < 2016 ~ PctOw2001Ws,
                                    year >= 2016 ~ PctOw2016Ws),
-         NLCD_PctWetland = case_when(year < 2016 ~ PctHbWet2011Ws + PctWdWet2011Ws,
+         NLCD_PctWetland = case_when(year < 2016 ~ PctHbWet2001Ws + PctWdWet2001Ws,
                                      year >= 2016 ~ PctHbWet2016Ws + PctWdWet2016Ws),
-         NLCD_PctGrassland = case_when(year < 2016 ~ PctShrb2011Ws + PctGrs2011Ws,
+         NLCD_PctGrassland = case_when(year < 2016 ~ PctShrb2001Ws + PctGrs2001Ws,
                                        year >= 2016 ~ PctShrb2016Ws + PctGrs2016Ws)) %>%
   select(-any_of(unique(nlcd_vars$Metric.Name))) 
 

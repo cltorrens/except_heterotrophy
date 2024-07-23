@@ -27,11 +27,24 @@ metrics_compiled <- data.frame()
 for(i in 1:length(lotic_siteyears_split)){
   newrow <- BernhardtMetabolism::calc_site_metrics(names(lotic_siteyears_split)[i], 
                                          lotic_siteyears_split)
+  
+  # newrow$GPP_growing <- lotic_siteyears_split[[i]] %>% mutate(month = month(Date)) %>%
+  #   filter(month %in% c(6,7,8,9,10)) %>%
+  #   summarize(growing_GPP = mean(GPP, na.rm = T))
+  
   newrow$year <-
     str_match(names(lotic_siteyears_split)[i], '[A-Za-z0-9_]+?([0-9]{4})$')[2]
+  
+  newrow$K600xERcor <- cor(lotic_siteyears_split[[i]]$K600, lotic_siteyears_split[[i]]$ER,
+                          use = "complete.obs")
+  newrow$K600xERcov <- cov(lotic_siteyears_split[[i]]$K600, lotic_siteyears_split[[i]]$ER,
+                          use = "complete.obs")
 
   metrics_compiled <- bind_rows(metrics_compiled, newrow)
 }
+
+# filter out data where the covariance between K600 and ER is greater than 0.75
+metrics_compiled <- metrics_compiled[which(abs(metrics_compiled$K600xERcor)>0.8),]
 
 write_csv(metrics_compiled, 
           'data_ignored/Bernhardt_2022/lotic_gap_filled_annual_summaries.csv')
@@ -51,4 +64,3 @@ yearly <- metrics_compiled %>%
 
 
 write_csv(yearly, 'data_working/annual_summary_data.csv')
-yearly2 <- read_csv('data_working/annual_summary_data.csv')
