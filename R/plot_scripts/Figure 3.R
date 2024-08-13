@@ -187,8 +187,8 @@ cowplot::save_plot(here("figures/Figure3_PR.png"),
 
 fig3.3 <- mod_tablelong2 %>% as_tibble() %>% 
   
-  # filter(Metric == 'NEP') %>%
-  filter(Metric == 'PR') %>%
+  filter(Metric == 'NEP') %>%
+  # filter(Metric == 'PR') %>%
   mutate(dAIC = as.numeric(round(min(AIC)-AIC, 1))) %>% 
   mutate(modeltype = as.factor(modeltype)) %>% 
   ungroup() %>% 
@@ -282,9 +282,9 @@ fig3.3 <- mod_tablelong2 %>% as_tibble() %>%
 
 
 cowplot::save_plot(here("figures/Figure3_NEP.png"), 
-                   fig3.3, base_width = 9, base_height = 10, dpi = 600)
+                   fig3.3, base_width = 7.2, base_height = 9.5, dpi = 600)
 cowplot::save_plot(here("figures/Figure3_PR.png"), 
-                   fig3.3, base_width = 9, base_height = 10, dpi = 600)
+                   fig3.3, base_width = 7.2, base_height = 9.5, dpi = 600)
 
 
 
