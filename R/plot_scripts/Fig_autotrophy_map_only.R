@@ -45,7 +45,6 @@ aut_site_names <- unique(aut_sites$site_name)
 
 Annual_info$class <- case_when(Annual_info$site_name %in% aut_site_names ~ "Aut",
                                TRUE ~ "Het")
-
 #### Generate map of NEP ####
 
 (NEP_map_fig <- ggmap(get_stamenmap(bbox=c(-125, 25, -66, 50), 
@@ -153,11 +152,12 @@ my_breaks <- c(0.05, 0.15, 0.4, 1)
   theme_classic())  # remove grid
 
 # export exploratory figures
-# ggsave(sitemap,
-#        filename = "figures/Annual_GPP_PR_USmap_071924.png",
-#        width = 22,
-#        height = 11,
-#        units = "cm"
-# )
+ggsave(sitemap,
+       filename = "figures/Annual_GPP_PR_USmap_071924.tiff",
+       width = 22,
+       height = 11,
+       units = "cm",
+       dpi = 300
+)
 
 # End of script.
