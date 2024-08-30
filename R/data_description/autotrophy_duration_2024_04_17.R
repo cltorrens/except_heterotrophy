@@ -12,8 +12,8 @@ lapply(c("plyr","dplyr","ggplot2","cowplot","lubridate",
          "tidyverse","data.table"), require, character.only=T)
 
 ## import most up-to-date dataset
-# dat <- readRDS("data_356rivers/high_quality_daily_metabolism_with_SP_covariates.rds")
-dat <- readRDS("../../data_356rivers/high_quality_daily_metabolism_with_SP_covariates.rds")
+dat <- readRDS("data_356rivers/high_quality_daily_metabolism_with_SP_covariates.rds")
+# dat <- readRDS("../../data_356rivers/high_quality_daily_metabolism_with_SP_covariates.rds")
 df <- dat[,c("site_name","date","GPP","ER")]
 df <- na.omit(df)
 
@@ -118,8 +118,8 @@ saveRDS(auto_df, "../../data_356rivers/autotrophic_event_duration_means.rds")
 #############################################
 ## Calculations and figures for results
 #############################################
-# auto_df <- readRDS("data_356rivers/autotrophic_event_duration_means.rds")
-auto_df <- readRDS("../../data_356rivers/autotrophic_event_duration_means.rds")
+auto_df <- readRDS("data_356rivers/autotrophic_event_duration_means.rds")
+# auto_df <- readRDS("../../data_356rivers/autotrophic_event_duration_means.rds")
 
 ## 1 ## What % of rivers experienced at least one autotrophic event
 length(levels(as.factor(auto_df$site_name))) # 212 sites
@@ -291,7 +291,9 @@ NEP_mag
 #####################################
 scaleFUN <- function(x) sprintf("%.2f", x)
 
-png('figures/Auto_events_figure.png', width = 6.5, height = 4, units = 'in',
+# png('figures/Auto_events_figure.png', width = 6.5, height = 4, units = 'in',
+#     res = 300)
+tiff('figures/Auto_events_figure.tiff', width = 6.5, height = 4, units = 'in',
     res = 300)
 plot_grid(
 
